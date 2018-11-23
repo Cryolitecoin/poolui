@@ -1,0 +1,11 @@
+logs/*
+*/.log
+!.gitkeep
+node_modules/
+vendor/
+tmp
+.DS_Store
+.idea
+app/vendor/
+build/
+app/globals.js

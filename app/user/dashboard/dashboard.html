@@ -1,0 +1,240 @@
+<ng-include src="'user/dashboard/poolstats.html'"></ng-include>
+<div layout="column" layout-lg="row" layout-gt-lg="row" flex>
+	<div layout="column" flex-lg="30" flex-gt-lg="30">
+		<md-card>
+			<md-toolbar class="md-table-toolbar md-default">
+				<div class="md-toolbar-tools">
+					<span class="md-title">Network Stats</span></span>
+				</div>
+			</md-toolbar>
+			<md-card-content>
+				<md-list>
+					<md-list-item>
+						<p> Hash Rate </p>
+						<p class="text-right">{{network.difficulty | difficultyToHashRate | toHashRate}}</p>
+					</md-list-item>
+					<md-list-item>
+						<p> Difficulty </p>
+						<p class="text-right">{{network.difficulty | number }}</p>
+					</md-list-item>
+					<md-list-item>
+						<p> Hash </p>
+						<p class="text-right truncate"><span ng-bind-html="network.hash | hashToLink: 'block'"></span></p>
+					</md-list-item>
+					<md-list-item>
+						<p> Height </p>
+						<p class="text-right">{{network.height | number }}</p>
+					</md-list-item>
+					<md-list-item>
+						<p> Reward </p>
+						<p class="text-right">{{network.value | toXMR}}</p>
+					</md-list-item>
+					<md-list-item>
+						<p> Time Found </p>
+						<p class="text-right"><span am-time-ago="network.ts * 1000"></span></p>
+					</md-list-item>
+				</md-list>
+			</md-card-content>
+		</md-card>
+	</div>
+	<div layout="column" flex-lg="70" flex-gt-lg="70">
+		<md-card>
+			<md-toolbar class="md-table-toolbar md-default">
+				<div class="md-toolbar-tools">
+					<span class="md-title">Pool Stats</span>
+				</div>
+			</md-toolbar>
+			<md-card-content>
+				<md-tabs md-dynamic-height>
+					<md-tab label="{{pooltype}}" index="$index" ng-repeat="pooltype in poolList track by $index">
+						<div layout-xs="column" layout-sm="column" layout="row" flex>
+							<div layout-xs="row" layout-sm="row" layout="column" flex>
+								<md-list flex>
+									<md-list-item>
+										<p> Hash Rate </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.hashRate | toHashRate }}</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Height </p>
+										<p class="text-right">{{poolStats[pooltype].pool_statistics.lastBlockFound | number}}</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Last Block </p>
+										<p class="text-right truncate"><span ng-bind-html="lastBlock[pooltype].hash | hashToLink: 'block'"></span></p>
+									</md-list-item>
+									<md-list-item>
+										<p> Block Reward </p>
+										<p class="text-right">{{lastBlock[pooltype].value | toXMR | number:10}} XMR</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Time Found </p>
+										<p class="text-right">
+											<span am-time-ago="poolStats[pooltype].pool_statistics.lastBlockFoundTime * 1000">Never</span>
+											<md-tooltip>
+												{{poolStats[pooltype].pool_statistics.lastBlockFoundTime*1000 | date:'hh:mm:ss dd/MM/yy'}}
+											</md-tooltip>
+										</p>
+									</md-list-item>
+								</md-list>
+							</div>
+							<div layout-xs="row" layout-sm="row" layout="column" flex>
+								<md-list flex>
+									<md-list-item>
+										<p> Fees </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.fee }} %</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Blocks Found </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.totalBlocksFound || '0' }}</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Miners </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.miners || '0' }}</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Miners Paid </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.totalMinersPaid || '0' }}</p>
+									</md-list-item>
+									<md-list-item>
+										<p> Payments sent </p>
+										<p class="text-right">{{ poolStats[pooltype].pool_statistics.totalPayments || '0' }}</p>
+									</md-list-item>
+								</md-list>
+							</div>
+						</div>
+					</md-tab>
+				</md-tabs>
+			</md-card-content>
+		</md-card>
+	</div>
+</div>
+
+<form layout layout-align="center" layout-padding>
+	<div layout="row" flex>
+		<md-input-container flex class="md-icon-float md-block md-title">
+			<label>Enter Payment Address</label>
+			<!-- below is the material icons -->
+			<md-icon class="material-icons">account_balance_wallet</md-icon>
+			<input type="text" ng-model="paymentAddress">
+		</md-input-container>
+		<div>
+			<md-button class="md-raised md-primary" ng-click="addAddress()">
+				<md-icon md-font-set="material-icons">add</md-icon>
+				Track Live Stats
+			</md-button>
+		</div>
+	</div>  
+</form>
+
+<div layout-md="column" layout-sm="column" layout-xs="column" layout="row" flex ng-repeat="(addr,miner) in addrStats">
+	<md-card flex>
+		<md-toolbar class="md-accent">
+			<div class="md-toolbar-tools">
+				<md-input-container flex="60" class="md-icon-float md-block md-body-1 hide-error-msg">
+					<label>Name your Miner Group</label>
+					<!-- below is the material icons -->
+					<md-icon class="material-icons">account_balance</md-icon>
+					<input type="text" ng-model="miner.name">
+					<md-tooltip>
+						{{addr}}
+					</md-tooltip>
+				</md-input-container>
+				<span class="md-caption">
+					( Last Hash : <span am-time-ago="miner.lastHash * 1000">Never</span> )
+					<md-tooltip>
+						{{miner.lastHash*1000 | date:'hh:mm:ss dd/MM/yy'}}
+					</md-tooltip>
+				</span>
+				<span flex></span>
+				<span>
+					<md-button class="md-fab md-mini" ng-click="deleteAddress(addr, $event)">
+						<md-icon md-font-set="material-icons">clear</md-icon>
+					</md-button>
+				</span>
+			</div>
+		</md-toolbar>
+		<md-card-content>
+			<div flex layout="column" layout-md="row" layout-gt-md="row" class="text-center">
+				<div flex layout="column" layout-gt-xs="row">
+					<div flex>
+						<h4> Hash Rate<h2>{{miner.hash | toHashRate}}</h2></h4>
+					</div>
+					<div flex>
+						<h4> Total Hashes<h2>{{miner.totalHashes | number}}</h2></h4>
+					</div>
+				</div>
+				<div flex layout="column" layout-gt-xs="row">
+					<div flex>
+						<h5> Total Due<h2>{{miner.amtDue | toXMR | number:10}} XMR</h2></h5>
+					</div>
+					<div flex>
+						<h5> Total Paid<h2>{{miner.amtPaid | toXMR | number:10}} XMR</h2></h5>
+					</div>
+				</div>
+			</div>
+		</md-card-content>
+		<md-card-content layout="column">
+			<div class="chartcontainer" ng-if="minerStats[addr].dataset !== {}" flex>
+				<linechart data="minerStats[addr].dataset" options="minerStats[addr].options"></linechart>
+			</div>
+		</md-card-content>
+		<md-card-content>
+			<div flex>
+				<md-table-container>
+					<table md-table md-row-select ng-model="minerStats[addr].table_selected" md-progress="minerStats[addr].promise" data-md-row-select="minerStats[addr].table_options.rowSelection" multiple="{{minerStats[addr].table_options.multiSelect}}">
+						<thead md-head>
+							<tr md-row>
+								<th md-column md-numeric><h2 class="md-subhead">Worker</h2></th>
+								<th md-column md-numeric><h2 class="md-subhead">#'s</h2></th>
+								<th md-column md-numeric><h2 class="md-subhead">Total #'s</h2></th>
+								<th md-column md-numeric><h2 class="md-subhead">Last Hash</h2></th>
+							</tr>
+						</thead>
+						<tbody md-body>
+							<tr md-row ng-repeat="(index, id) in addrStats[addr].ids" md-select="id" data-md-on-select="updateCharts" md-on-deselect="updateCharts">
+								<td md-cell><p class="md-body-2">{{id}}</p></td>
+								<td md-cell><p class="md-body-2">{{minerStats[addr].dataset[id][0].hs | toHashRate}}</p></td>
+								<td md-cell><p class="md-body-2">{{addrStats[addr].workerStats[id].totalHash | number}}</p></td>
+								<td md-cell>
+									<span class="md-body-2" am-time-ago="minerStats[addr].dataset[id][0].ts"></span>
+									<md-tooltip>
+										{{minerStats[addr].dataset[id][0].ts | date: 'hh:mm:ss dd/MM/yy'}}
+									</md-tooltip>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</md-table-container>
+			</div>
+		</md-card-content>
+		<md-card-content>
+			<div flex layout="column" layout-md="row" layout-gt-md="row" class="text-right">
+				<div flex layout="column" layout-gt-xs="row">
+					<div flex>
+						
+					</div>
+					<div flex>
+						<h3> Valid Shares<h2>{{miner.validShares | number}} <md-icon class="valid">check</md-icon></h2></h3>
+						<h3> Invalid Shares<h2>{{miner.invalidShares | number}} <md-icon class="invalid">clear</md-icon></h2></h3>
+					</div>
+				</div>
+			</div>
+		</md-card-content>
+	</md-card-content>
+	<md-card-actions layout="row" layout-align="end center" flex>
+		<form layout layout-align="center" layout-padding>
+			<div layout="row" flex>
+				<md-checkbox ng-model="miner.alarm" ng-change="setAlarm(addr, miner.alarm)"></md-checkbox>
+				<md-input-container flex class="md-icon-float md-block md-title">
+					<label>Hashrate Alarm</label>
+					<!-- below is the material icons -->
+					<input type="text" ng-model="miner.alarmLimit">
+					<md-icon class="material-icons">alarm</md-icon>
+				</md-input-container>
+			</div>  
+		</form>
+		<span flex></span>
+		<md-button class="md-raised md-primary" ng-click="viewPayments($event, miner, addr)">View Payments</md-button>
+	</md-card-actions>
+</md-card>
+</div>
